@@ -27,7 +27,6 @@ app.use('/api/posts', postRoutes);
 app.use('/api/messages', messageRoutes);
 
 // Production Settings
-
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '/client/dist')));
 

@@ -24,19 +24,19 @@ import { BsFileImageFill } from 'react-icons/bs';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import userAtom from '../atoms/userAtom.js';
 import postsAtom from '../atoms/postsAtom.js';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 const CreatePost = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [postText, setPostText] = useState('');
   const postMediaRef = useRef();
-  const { handleImageChange, previewImage, setPreviewImage } =
-    usePreviewImage();
+  const { handleImageChange, previewImage, setPreviewImage } = usePreviewImage();
   const user = useRecoilValue(userAtom);
   const toast = useToast();
   const [isCreatePostLoading, setIsCreatePostLoading] = useState();
   const [posts, setPosts] = useRecoilState(postsAtom);
   const { username } = useParams();
+  const { pathname } = useLocation();
 
   const handleTextChange = (e) => {
     setPostText(e.target.value);
@@ -76,7 +76,7 @@ const CreatePost = () => {
 
       onClose();
       setIsCreatePostLoading(false);
-      if (username === user.username) {
+      if (username === user.username || pathname === '/') {
         setPosts([data.post, ...posts]);
       }
       setPostText('');
@@ -118,21 +118,10 @@ const CreatePost = () => {
                 value={postText}
                 maxLength={500}
               />
-              <Text
-                size={'xs'}
-                color={'gray.800'}
-                textAlign={'right'}
-                fontWeight={'bold'}
-                m={1}
-              >
+              <Text size={'xs'} color={'gray.800'} textAlign={'right'} fontWeight={'bold'} m={1}>
                 {postText.length}/500
               </Text>
-              <Input
-                type='file'
-                hidden
-                ref={postMediaRef}
-                onChange={handleImageChange}
-              />
+              <Input type='file' hidden ref={postMediaRef} onChange={handleImageChange} />
 
               <BsFileImageFill
                 style={{ marginLeft: '5px', cursor: 'pointer' }}
@@ -143,24 +132,14 @@ const CreatePost = () => {
               {previewImage && (
                 <Flex m={'5px'} w={'full'} position={'relative'}>
                   <img src={previewImage} />
-                  <CloseButton
-                    onClick={() => setPreviewImage('')}
-                    position={'absolute'}
-                    top={2}
-                    right={2}
-                  />
+                  <CloseButton onClick={() => setPreviewImage('')} position={'absolute'} top={2} right={2} />
                 </Flex>
               )}
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button
-              colorScheme='blue'
-              mr={2}
-              onClick={handleCreatePost}
-              isLoading={isCreatePostLoading}
-            >
+            <Button colorScheme='blue' mr={2} onClick={handleCreatePost} isLoading={isCreatePostLoading}>
               Post
             </Button>
           </ModalFooter>
