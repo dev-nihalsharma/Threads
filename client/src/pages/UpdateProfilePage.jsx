@@ -20,19 +20,23 @@ import { useRecoilState } from 'recoil';
 import { useToast } from '@chakra-ui/react';
 import userAtom from '../atoms/userAtom';
 import usePreviewImage from '../hooks/usePreviewImage';
+import { useNavigate } from 'react-router-dom';
+
 const UpdateProfilePage = () => {
   const [user, setUser] = useRecoilState(userAtom);
   const [inputs, setInputs] = useState({
     name: user.name,
     username: user.username,
     email: user.email,
-    bio: user.bio,
+    bio: user.bio || '',
     password: '',
   });
   const [isSubmitBtnLoading, setIsSubmitBtnLoading] = useState();
   const profilePicRef = useRef();
   const { handleImageChange, previewImage } = usePreviewImage();
   const toast = useToast();
+  const navigate = useNavigate();
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
 
@@ -57,6 +61,8 @@ const UpdateProfilePage = () => {
         setUser(data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
         setIsSubmitBtnLoading(false);
+
+        navigate(`/${user.username}`);
       }
     } catch (error) {
       toast({
@@ -82,17 +88,11 @@ const UpdateProfilePage = () => {
           p={6}
           my={12}
         >
-          <Heading
-            lineHeight={1.1}
-            fontSize={{ base: '2xl', sm: '3xl' }}
-          ></Heading>
+          <Heading lineHeight={1.1} fontSize={{ base: '2xl', sm: '3xl' }}></Heading>
           <FormControl>
             <Stack direction={['column', 'row']} spacing={6}>
               <Center>
-                <Avatar
-                  size='xl'
-                  src={previewImage || user.profilePic}
-                ></Avatar>
+                <Avatar size='xl' src={previewImage || user.profilePic}></Avatar>
               </Center>
               <Center w='full'>
                 <Button
@@ -104,12 +104,7 @@ const UpdateProfilePage = () => {
                   Change Profile Pic
                 </Button>
 
-                <Input
-                  type='file'
-                  hidden
-                  ref={profilePicRef}
-                  onChange={handleImageChange}
-                />
+                <Input type='file' hidden ref={profilePicRef} onChange={handleImageChange} />
               </Center>
             </Stack>
           </FormControl>
@@ -130,9 +125,7 @@ const UpdateProfilePage = () => {
               _placeholder={{ color: 'gray.500' }}
               type='text'
               value={inputs.username}
-              onChange={(e) =>
-                setInputs({ ...inputs, username: e.target.value })
-              }
+              onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
             />
           </FormControl>
           <FormControl>
@@ -162,9 +155,7 @@ const UpdateProfilePage = () => {
               _placeholder={{ color: 'gray.500' }}
               type='password'
               value={inputs.password}
-              onChange={(e) =>
-                setInputs({ ...inputs, password: e.target.value })
-              }
+              onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
             />
           </FormControl>
           <Stack spacing={6} direction={['column', 'row']}>

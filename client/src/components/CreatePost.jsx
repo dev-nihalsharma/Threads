@@ -24,6 +24,7 @@ import { BsFileImageFill } from 'react-icons/bs';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import userAtom from '../atoms/userAtom.js';
 import postsAtom from '../atoms/postsAtom.js';
+import { useParams } from 'react-router-dom';
 
 const CreatePost = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -35,14 +36,14 @@ const CreatePost = () => {
   const toast = useToast();
   const [isCreatePostLoading, setIsCreatePostLoading] = useState();
   const [posts, setPosts] = useRecoilState(postsAtom);
+  const { username } = useParams();
 
-  const handleTextChagnge = (e) => {
+  const handleTextChange = (e) => {
     setPostText(e.target.value);
   };
   const handleCreatePost = async () => {
     try {
       setIsCreatePostLoading(true);
-      console.log(postText);
       const res = await fetch('/api/posts/create', {
         method: 'POST',
         headers: {
@@ -55,7 +56,6 @@ const CreatePost = () => {
         }),
       });
       const data = await res.json();
-      console.log(data);
       if (data.error) {
         toast({
           title: 'Error',
@@ -76,7 +76,9 @@ const CreatePost = () => {
 
       onClose();
       setIsCreatePostLoading(false);
-      setPosts([data.post, ...posts]);
+      if (username === user.username) {
+        setPosts([data.post, ...posts]);
+      }
       setPostText('');
       setPreviewImage('');
     } catch (error) {
@@ -112,7 +114,7 @@ const CreatePost = () => {
             <FormControl>
               <Textarea
                 placeholder='Write your post details here'
-                onChange={handleTextChagnge}
+                onChange={handleTextChange}
                 value={postText}
                 maxLength={500}
               />

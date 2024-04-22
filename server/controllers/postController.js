@@ -41,10 +41,7 @@ const createPost = async (req, res) => {
     const { postedBy, text } = req.body;
     let { img } = req.body;
 
-    if (!postedBy || !text)
-      return req
-        .status(400)
-        .json({ error: 'PostedBy and text field is required' });
+    if (!postedBy || !text) return req.status(400).json({ error: 'PostedBy and text field is required' });
 
     const user = await User.findById(postedBy);
     if (!user) return req.status(404).json({ error: 'User not found' });
@@ -53,10 +50,7 @@ const createPost = async (req, res) => {
       return req.status(404).json({ error: 'Un-Authorized to post' });
 
     const maxTextLength = 500;
-    if (text > maxTextLength)
-      return req
-        .status(403)
-        .json({ error: 'Text must have maximum 500 letters' });
+    if (text > maxTextLength) return req.status(403).json({ error: 'Text must have maximum 500 letters' });
 
     if (img) {
       const uploadedImg = await cloudinary.uploader.upload(img);
@@ -70,9 +64,7 @@ const createPost = async (req, res) => {
     });
 
     await newPost.save();
-    res
-      .status(201)
-      .json({ message: 'Successfully created post', post: newPost });
+    res.status(201).json({ message: 'Successfully created post', post: newPost });
   } catch (error) {
     res.status(500).json({ error: error.message });
     console.log('Error at creating post: ', error.message);
@@ -93,9 +85,7 @@ const deletePost = async (req, res) => {
       return res.status(404).json({ error: 'Un-Authorized to delete' });
 
     if (post.img) {
-      await cloudinary.uploader.destroy(
-        post.img.split('/').pop().split('.')[0]
-      );
+      await cloudinary.uploader.destroy(post.img.split('/').pop().split('.')[0]);
     }
 
     await Post.findByIdAndDelete(req.params.id);
@@ -144,7 +134,6 @@ const replyToPost = async (req, res) => {
 
   if (!text) return res.status(400).json({ error: 'Text field required' });
 
-  console.log(postId, userId);
   const post = await Post.findById(postId);
 
   if (!post) return res.status(404).json({ error: 'Post not found' });
@@ -179,12 +168,4 @@ const getFeedPosts = async (req, res) => {
   }
 };
 
-export {
-  getPost,
-  getFeedPosts,
-  getUserPosts,
-  createPost,
-  deletePost,
-  likeUnLikePost,
-  replyToPost,
-};
+export { getPost, getFeedPosts, getUserPosts, createPost, deletePost, likeUnLikePost, replyToPost };

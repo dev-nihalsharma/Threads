@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import generateTokenAndSetCookie from '../utils/helpers/genrateTokenAndSetCookie.js';
 import { v2 as cloudinary } from 'cloudinary';
 import mongoose from 'mongoose';
+import Post from '../models/postModel.js';
 
 const signupUser = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ const signupUser = async (req, res) => {
 
     if (user) {
       res.status(400).json({ error: 'User Already Exists' });
+      return;
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -32,8 +34,6 @@ const signupUser = async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         username: newUser.username,
-        bio: user.bio,
-        profilePic: user.profilePic,
       });
     } else {
       res.status(500).json({
@@ -50,13 +50,16 @@ const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
-    const isPasswordsCorrect = await bcrypt.compare(
-      password,
-      user?.password || ''
-    );
+    const isPasswordsCorrect = await bcrypt.compare(password, user?.password || '');
 
     if (!user || !isPasswordsCorrect) {
       res.status(400).json({ error: 'Invalid username or password' });
+      return;
+    }
+
+    if (user.isFrozen) {
+      user.isFrozen = false;
+      user.save();
     }
 
     generateTokenAndSetCookie(user._id, res);
@@ -70,8 +73,8 @@ const loginUser = async (req, res) => {
       profilePic: user.profilePic,
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
     console.log('Error at Login: ', error.message);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -90,12 +93,8 @@ const followUnFollow = async (req, res) => {
     const userToModify = await User.findById(id);
     const currentUser = await User.findById(req.user._id);
 
-    console.log(userToModify);
-
     if (id == req.user._id.toString()) {
-      return res
-        .status(400)
-        .json({ error: 'You can not follow/un-follow yourself ' });
+      return res.status(400).json({ error: 'You can not follow/un-follow yourself ' });
     }
 
     if (!userToModify || !currentUser) {
@@ -123,7 +122,6 @@ const followUnFollow = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  console.log('profilePic');
   try {
     const { id } = req.params;
     const { name, email, username, password, bio } = req.body;
@@ -139,8 +137,7 @@ const updateUser = async (req, res) => {
 
     if (!user) return req.status(400).json({ error: 'User not found' });
 
-    if (id != req.user.id.toString())
-      return req.status(400).json({ error: 'Un-Authorized' });
+    if (id != req.user.id.toString()) return req.status(400).json({ error: 'Un-Authorized' });
 
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -168,6 +165,19 @@ const updateUser = async (req, res) => {
 
     user = await user.save();
 
+    await Post.updateMany(
+      {
+        'replies.userId': user._id,
+      },
+      {
+        $set: {
+          'replies.$[reply].username': user.username,
+          'replies.$[reply].userProfilePic': user.profilePic,
+        },
+      },
+      { arrayFilters: [{ 'reply.userId': user._id }] }
+    );
+
     user.password = null;
 
     res.status(200).json({ message: 'Profile updated successfully', user });
@@ -182,13 +192,9 @@ const getUserProfile = async (req, res) => {
   try {
     let user;
     if (mongoose.isValidObjectId(query)) {
-      user = await User.findById(query)
-        .select('-password')
-        .select('-updatedAt');
+      user = await User.findOne({ _id: query }).select('-password').select('-updatedAt');
     } else {
-      user = await User.findOne({ username: query })
-        .select('-password')
-        .select('-updatedAt');
+      user = await User.findOne({ username: query }).select('-password').select('-updatedAt');
     }
 
     if (!user) return res.status(400).json({ error: 'User not found' });
@@ -200,6 +206,53 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const getSuggestedUsers = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const usersFollowedByClient = await User.findById(userId).select('following');
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: userId },
+          isFrozen: false,
+        },
+      },
+      {
+        $sample: { size: 10 },
+      },
+    ]);
+
+    const filteredUsers = users.filter(
+      (user) => !usersFollowedByClient.following.includes(user._id.toString())
+    );
+
+    const suggestedUsers = filteredUsers.slice(0, 4);
+    suggestedUsers.forEach((user) => (user.password = null));
+
+    res.status(200).json(suggestedUsers);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const freezeAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) return res.status(400).json({ error: 'User not found' });
+
+    user.isFrozen = true;
+    user.save();
+
+    res.status(200).json({ message: 'Account Frozen Successfully' });
+  } catch (error) {
+    console.log('Error at Freezing Account: ', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export {
   signupUser,
   loginUser,
@@ -207,4 +260,6 @@ export {
   followUnFollow,
   updateUser,
   getUserProfile,
+  getSuggestedUsers,
+  freezeAccount,
 };

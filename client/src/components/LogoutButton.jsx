@@ -36,7 +36,7 @@ const LogoutButton = () => {
   };
 
   return (
-    <Button pos={'fixed'} top={'30px'} right={'30px'} onClick={handleLogout}>
+    <Button pos={'fixed'} top={'20px'} right={'30px'} onClick={handleLogout}>
       <FiLogOut />
     </Button>
   );

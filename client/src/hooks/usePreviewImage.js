@@ -1,9 +1,11 @@
 import React from 'react';
 import { useToast } from '@chakra-ui/react';
+import useShowToast from './useShowToast';
 
 const usePreviewImage = () => {
   const [previewImage, setPreviewImage] = React.useState(null);
   const toast = useToast();
+  const showToast = useShowToast();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -15,13 +17,8 @@ const usePreviewImage = () => {
 
       reader.readAsDataURL(file);
     } else {
-      toast({
-        title: 'Invalid File Type',
-        description: 'Please select a valid file',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast('Invalid file type', ' Please select an image file', 'error');
+      setPreviewImage(null);
     }
   };
 

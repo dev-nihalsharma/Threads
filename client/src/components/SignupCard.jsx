@@ -34,7 +34,8 @@ function SignupCard() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState();
 
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();
     try {
       setIsLoading(true);
       const res = await fetch('/api/users/signup', {
@@ -75,7 +76,7 @@ function SignupCard() {
   };
 
   return (
-    <div>
+    <form onSubmit={handleSignup}>
       <Flex minH={'80vh'} align={'center'} justify={'center'}>
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
           <Stack align={'center'}>
@@ -83,12 +84,7 @@ function SignupCard() {
               Sign up
             </Heading>
           </Stack>
-          <Box
-            rounded={'lg'}
-            bg={useColorModeValue('white', 'gray.dark')}
-            boxShadow={'lg'}
-            p={8}
-          >
+          <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.dark')} boxShadow={'lg'} p={8}>
             <Stack spacing={4}>
               <HStack>
                 <Box>
@@ -96,9 +92,7 @@ function SignupCard() {
                     <FormLabel>Full Name</FormLabel>
                     <Input
                       type='text'
-                      onChange={(e) =>
-                        setInputs({ ...inputs, name: e.target.value })
-                      }
+                      onChange={(e) => setInputs({ ...inputs, name: e.target.value })}
                       value={inputs.name}
                     />
                   </FormControl>
@@ -108,9 +102,7 @@ function SignupCard() {
                     <FormLabel>Username</FormLabel>
                     <Input
                       type='text'
-                      onChange={(e) =>
-                        setInputs({ ...inputs, username: e.target.value })
-                      }
+                      onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
                       value={inputs.username}
                     />
                   </FormControl>
@@ -120,9 +112,7 @@ function SignupCard() {
                 <FormLabel>Email address</FormLabel>
                 <Input
                   type='email'
-                  onChange={(e) =>
-                    setInputs({ ...inputs, email: e.target.value })
-                  }
+                  onChange={(e) => setInputs({ ...inputs, email: e.target.value })}
                   value={inputs.email}
                 />
               </FormControl>
@@ -131,17 +121,13 @@ function SignupCard() {
                 <InputGroup>
                   <Input
                     type={showPassword ? 'text' : 'password'}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, password: e.target.value })
-                    }
+                    onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
                     value={inputs.password}
                   />
                   <InputRightElement h={'full'}>
                     <Button
                       variant={'ghost'}
-                      onClick={() =>
-                        setShowPassword((showPassword) => !showPassword)
-                      }
+                      onClick={() => setShowPassword((showPassword) => !showPassword)}
                     >
                       {showPassword ? <ViewIcon /> : <ViewOffIcon />}
                     </Button>
@@ -157,7 +143,7 @@ function SignupCard() {
                   _hover={{
                     bg: 'blue.500',
                   }}
-                  onClick={handleSignup}
+                  type={'submit'}
                   isLoading={isLoading}
                 >
                   Sign up
@@ -166,10 +152,7 @@ function SignupCard() {
               <Stack pt={6}>
                 <Text align={'center'}>
                   Already a user?{' '}
-                  <Link
-                    color={'blue.400'}
-                    onClick={() => setAuthSceen('login')}
-                  >
+                  <Link color={'blue.400'} onClick={() => setAuthSceen('login')}>
                     Login
                   </Link>
                 </Text>
@@ -178,7 +161,7 @@ function SignupCard() {
           </Box>
         </Stack>
       </Flex>
-    </div>
+    </form>
   );
 }
 

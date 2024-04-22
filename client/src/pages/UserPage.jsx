@@ -18,7 +18,8 @@ function UserPage() {
 
   const { user, isLoading } = getUserProfile();
   useEffect(() => {
-    const fetchFeedPost = async () => {
+    const fetchUserPost = async () => {
+      if (!user) return;
       try {
         setIsFetchingPost(true);
         const res = await fetch(`/api/posts/user/${username}`, {
@@ -44,7 +45,7 @@ function UserPage() {
       }
     };
 
-    fetchFeedPost();
+    fetchUserPost();
   }, [username, showToast]);
 
   if (isLoading)

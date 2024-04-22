@@ -32,7 +32,8 @@ function LoginCard() {
   const [isLoading, setIsLoading] = useState();
   const toast = useToast();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
       setIsLoading(true);
       const res = await fetch('/api/users/login', {
@@ -44,7 +45,6 @@ function LoginCard() {
       });
 
       const data = await res.json();
-      console.log(data);
       if (data.error) {
         toast({
           title: 'Error',
@@ -66,14 +66,15 @@ function LoginCard() {
 
       localStorage.setItem('user', JSON.stringify(data));
       setUser(data);
-      setIsLoading(false);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleLogin}>
       <Flex minH={'80vh'} align={'center'} justify={'center'}>
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
           <Stack align={'center'}>
@@ -81,20 +82,13 @@ function LoginCard() {
               Login up
             </Heading>
           </Stack>
-          <Box
-            rounded={'lg'}
-            bg={useColorModeValue('white', 'gray.dark')}
-            boxShadow={'lg'}
-            p={8}
-          >
+          <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.dark')} boxShadow={'lg'} p={8}>
             <Stack spacing={4}>
               <FormControl isRequired>
                 <FormLabel>Username</FormLabel>
                 <Input
-                  type='email'
-                  onChange={(e) =>
-                    setInputs({ ...inputs, username: e.target.value })
-                  }
+                  type={'text'}
+                  onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
                   value={inputs.username}
                 />
               </FormControl>
@@ -103,17 +97,13 @@ function LoginCard() {
                 <InputGroup>
                   <Input
                     type={showPassword ? 'text' : 'password'}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, password: e.target.value })
-                    }
+                    onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
                     value={inputs.password}
                   />
                   <InputRightElement h={'full'}>
                     <Button
                       variant={'ghost'}
-                      onClick={() =>
-                        setShowPassword((showPassword) => !showPassword)
-                      }
+                      onClick={() => setShowPassword((showPassword) => !showPassword)}
                     >
                       {showPassword ? <ViewIcon /> : <ViewOffIcon />}
                     </Button>
@@ -129,7 +119,7 @@ function LoginCard() {
                   _hover={{
                     bg: 'blue.500',
                   }}
-                  onClick={handleLogin}
+                  type={'submit'}
                   isLoading={isLoading}
                 >
                   Login
@@ -138,10 +128,7 @@ function LoginCard() {
               <Stack pt={6}>
                 <Text align={'center'}>
                   Create Account?{' '}
-                  <Link
-                    color={'blue.400'}
-                    onClick={() => setAuthSceen('signup')}
-                  >
+                  <Link color={'blue.400'} onClick={() => setAuthSceen('signup')}>
                     Sign-up
                   </Link>
                 </Text>
@@ -150,7 +137,7 @@ function LoginCard() {
           </Box>
         </Stack>
       </Flex>
-    </div>
+    </form>
   );
 }
 

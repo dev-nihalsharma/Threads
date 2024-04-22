@@ -12,19 +12,20 @@ const getUserProfile = () => {
     const getUser = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `http://localhost:3000/api/users/profile/${username}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        const res = await fetch(`/api/users/profile/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
         const data = await res.json();
         if (data.error) {
           showToast('Error', data.error, 'error');
+          return;
+        }
+        if (data.isFrozen) {
+          setUser(null);
           return;
         }
 

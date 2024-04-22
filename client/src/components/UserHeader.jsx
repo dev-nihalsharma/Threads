@@ -19,6 +19,7 @@ import { CgMoreO } from 'react-icons/cg';
 import { NavLink } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import userAtom from '../atoms/userAtom.js';
+import useHandleFollowUnFollow from '../hooks/useHandleFollowUnFollow.js';
 
 function UserHeader({ user }) {
   const toast = useToast();
@@ -30,67 +31,8 @@ function UserHeader({ user }) {
   };
 
   const currentUser = useRecoilValue(userAtom);
-  const [following, setFollowing] = useState(
-    user?.followers.includes(currentUser?._id)
-  );
-  const [isFlwBtnLoading, SetIsFlwBtnLoading] = useState();
 
-  const handelFollowUnFollow = async () => {
-    if (!currentUser) {
-      toast({
-        title: 'You must be logged in',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-    if (isFlwBtnLoading) return;
-    SetIsFlwBtnLoading(true);
-    const res = await fetch(`/api/users/follow/${user?._id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-      toast({
-        title: 'Error',
-        description: data.error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-
-    if (following) {
-      toast({
-        title: 'Unfollowed',
-        description: data.message,
-        status: 'info',
-        duration: 3000,
-        isClosable: true,
-      });
-      user?.followers.pop();
-    }
-    if (!following) {
-      toast({
-        title: 'Followed',
-        description: data.message,
-        status: 'info',
-        duration: 3000,
-        isClosable: true,
-      });
-      user?.followers.push(currentUser?._id);
-    }
-
-    setFollowing(!following);
-    SetIsFlwBtnLoading(false);
-  };
-
+  const { following, isFlwBtnLoading, handelFollowUnFollow } = useHandleFollowUnFollow(user);
   return (
     <VStack alignItems={'start'}>
       <Flex justifyContent={'space-between'} w={'full'}>
@@ -100,23 +42,13 @@ function UserHeader({ user }) {
           </Text>
           <Flex alignItems={'center'} gap={4}>
             <Text size={'sm'}>{user?.username}</Text>
-            <Text
-              size={'xs'}
-              bg={'gray.dark'}
-              color={'gray.light'}
-              p={1}
-              borderRadius={8}
-            >
+            <Text size={'xs'} bg={'gray.light'} p={1} borderRadius={8}>
               threads.net
             </Text>
           </Flex>
         </Box>
         <Box>
-          <Avatar
-            name={user?.name}
-            size={{ base: 'md', md: 'xl' }}
-            src={user?.profilePic}
-          ></Avatar>
+          <Avatar name={user?.name} size={{ base: 'md', md: 'xl' }} src={user?.profilePic}></Avatar>
         </Box>
       </Flex>
       <Text>{user?.bio}</Text>
@@ -124,11 +56,7 @@ function UserHeader({ user }) {
         <Flex gap={2} alignItems={'center'}>
           <Text color={'gray.light'}>{user?.followers.length} Followers</Text>
           <Box w={1} p={1} borderRadius={'full'} bg={'gray.light'}></Box>
-          <Link
-            href={`https://instagram.com/${user?.username}`}
-            target='_blank'
-            color={'gray.light'}
-          >
+          <Link href={`https://instagram.com/${user?.username}`} target='_blank' color={'gray.light'}>
             instagram.com
           </Link>
         </Flex>
@@ -157,23 +85,13 @@ function UserHeader({ user }) {
         </NavLink>
       )}
       {currentUser?._id !== user?._id && (
-        <Button
-          onClick={handelFollowUnFollow}
-          size={'sm'}
-          isLoading={isFlwBtnLoading}
-        >
+        <Button onClick={handelFollowUnFollow} size={'sm'} isLoading={isFlwBtnLoading}>
           {following ? 'Un-Follow' : 'Follow'}
         </Button>
       )}
 
       <Flex w={'full'}>
-        <Flex
-          flex={1}
-          borderBottom={'1.5px solid white'}
-          justifyContent={'center'}
-          pb='3'
-          cursor={'pointer'}
-        >
+        <Flex flex={1} borderBottom={'1.5px solid white'} justifyContent={'center'} pb='3' cursor={'pointer'}>
           <Text fontWeight={'bold'}> Threads</Text>
         </Flex>
         <Flex

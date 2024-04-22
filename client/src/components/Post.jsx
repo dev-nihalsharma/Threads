@@ -1,8 +1,7 @@
 import { DeleteIcon } from '@chakra-ui/icons';
 import { Avatar, Box, Flex, Image, Text } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { formatDistanceToNowStrict } from 'date-fns';
 import useShowToast from '../hooks/useShowToast';
@@ -15,7 +14,7 @@ function Post({ post }) {
   const [postedByUser, setPostedByUser] = useState(null);
   const currentUser = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
-  const navigate = useNavigate();
+
   const showToast = useShowToast();
 
   useEffect(() => {
@@ -76,11 +75,7 @@ function Post({ post }) {
       <Flex gap={3} mb={4} py={5}>
         <Flex flexDirection={'column'} alignItems={'center'}>
           <Link to={`/${postedByUser?.username}`}>
-            <Avatar
-              size={'md'}
-              name={postedByUser?.name}
-              src={postedByUser?.profilePic}
-            />
+            <Avatar size={'md'} name={postedByUser?.name} src={postedByUser?.profilePic} />
           </Link>
           <Box w='1px' h={'full'} bg={'gray.light'} my={2}></Box>
           <Box position={'relative'} w={'full'}>
@@ -140,17 +135,12 @@ function Post({ post }) {
               {currentUser?._id == post.postedBy && (
                 <DeleteIcon onClick={handleDelete} ml={2} cursor={'pointer'} />
               )}
-              <BsThreeDotsVertical />
             </Flex>
           </Flex>
           <Link to={`/${postedByUser?.username}/post/${post._id}`}>
             <Text fontSize={'sm'}>{post.text}</Text>
             {post.img && (
-              <Box
-                borderRadius={6}
-                overflow={'hidden'}
-                border={'1px solid gray.light'}
-              >
+              <Box borderRadius={6} overflow={'hidden'} border={'1px solid gray.light'}>
                 <Image src={post.img} w={'full'} />
               </Box>
             )}
